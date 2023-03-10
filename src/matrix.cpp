@@ -32,12 +32,46 @@ Matrix<T>::Matrix(const Matrix<T> &item) : row_(item.row_), column_(item.column_
 }
 
 template<typename T>
-Matrix<T>::Matrix(std::initializer_list<std::initializer_list<T>> list) {
+Matrix<T>::Matrix(Matrix<T> &&other) noexcept {
+    matrix_ = std::move(other.matrix_);
+    row_ = other.row_;
+    column_ = other.column_;
+    other.row_ = 0;
+    other.column_ = 0;
+}
 
-    for (const T& element : list ) {
-        for (const T& element2 : element ) {
+template<typename T>
+Matrix<T> &Matrix<T>::operator=(Matrix<T> &&other) noexcept {
+    if (this == &other) return *this;
 
+    matrix_ = other.matrix_;
+    row_ = other.row_;
+    column_ = other.column_;
+
+    other.matrix_ = std::move(other.matrix_);
+    other.row_ = 0;
+    other.column_ = 0;
+
+    return *this;
+}
+
+template<typename T>
+Matrix<T>::Matrix(const std::initializer_list<std::initializer_list<T>> list) {
+    matrix_.reserve(list.size());
+    int mx{};
+    int mn{};
+    for (const auto& element : list ) {
+        vector<T> tmp;
+        tmp.reserve(element.size());
+        for (const auto& element2 : element) {
+            tmp.push_back(element2);
         }
+        mx = ((mx < tmp.size()) ? tmp.size() : mx);
+        mn = ((mn > tmp.size()) ? tmp.size() : mn);
+        matrix_.push_back(std::move(tmp));
+    }
+    if (mx != mn) {
+        for (auto &element : matrix_) element.resize(mx);
     }
     row_ = matrix_.size();
     column_ = matrix_[0].size();
@@ -173,6 +207,7 @@ T Matrix<T>::Dot(const Matrix<T> &matrix1) {
     }
 }
 
+
 //int templates
 
 template Matrix<int>::Matrix();
@@ -214,6 +249,10 @@ template Matrix<int> &Matrix<int>::operator*=(const int &item);
 template Matrix<int> &Matrix<int>::transpose();
 
 template int Matrix<int>::Dot(const Matrix<int> &matrix1);
+
+template Matrix<int>::Matrix(Matrix<int> &&other) noexcept;
+
+template Matrix<int> &Matrix<int>::operator=(Matrix<int> &&other) noexcept;
 
 //float templates
 
@@ -257,6 +296,10 @@ template Matrix<float> &Matrix<float>::transpose();
 
 template float Matrix<float>::Dot(const Matrix<float> &matrix1);
 
+template Matrix<float>::Matrix(Matrix<float> &&other) noexcept;
+
+template Matrix<float> &Matrix<float>::operator=(Matrix<float> &&other) noexcept;
+
 //double templates
 
 template Matrix<double>::Matrix();
@@ -298,3 +341,7 @@ template Matrix<double> &Matrix<double>::operator*=(const int &item);
 template Matrix<double> &Matrix<double>::transpose();
 
 template double Matrix<double>::Dot(const Matrix<double> &matrix1);
+
+template Matrix<double>::Matrix(Matrix<double> &&other) noexcept;
+
+template Matrix<double> &Matrix<double>::operator=(Matrix<double> &&other) noexcept;

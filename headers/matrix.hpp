@@ -29,6 +29,10 @@ class Matrix {
 
   Matrix(const Matrix<T> &item);
 
+  Matrix(Matrix<T> &&other) noexcept;
+
+  Matrix<T> &operator=(Matrix<T> && other) noexcept;
+
   Matrix(initializer_list<std::initializer_list<T>> matrix);
 
   ~Matrix();
