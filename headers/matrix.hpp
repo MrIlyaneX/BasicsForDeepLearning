@@ -15,6 +15,27 @@
 template<typename T>
 concept Numeric = std::is_arithmetic_v<T>;
 
+//--------------------
+// TODO: Implement Resize (currently do not resize column_ size)
+//--------------------
+
+//--------------------
+// TODO: Gaussian Eliminations
+//--------------------
+
+//--------------------
+// TODO: Identity Matrix
+//--------------------
+
+//--------------------
+// TODO: A = LU and A = LDU factorization
+//--------------------
+
+//--------------------
+// TODO: Gradient counting
+//--------------------
+
+
 //Matrix class is a class that presents 2d matrix and operations over it.
 //Matrix supports types of std::is_arithmetic_v<T>
 template<typename T> requires Numeric<T>
@@ -102,7 +123,64 @@ public:
 
     void Resize(int new_row_size, int new_col_size);
 
-private:
+    //own iterator class for running through the Matrix out of class.
+    class Iterator{
+    public:
+        //default c-tor
+        Iterator(std::vector<std::vector<T>>& data_, int row_, int col_) : data_(data_), row_(row_), col_(col_) {}
+
+        //dereference operator
+        T& operator*() const {
+            return data_[row_][col_];
+        }
+
+        //for pointer-access operator
+        T* operator->() const {
+            return &(data_[row_][col_]);
+        }
+
+        //increment operator
+        Iterator& operator++() {
+            ++col_;
+            if (col_ == data_[row_].size()) {
+                ++row_;
+                col_ = 0;
+            }
+            return *this;
+        }
+
+        //increment operator
+        Iterator operator++(int) {
+            Iterator tmp = *this;
+            ++(*this);
+            return tmp;
+        }
+
+        //operator==
+        bool operator==(const Iterator& other) const {
+            return (row_ == other.row_ && col_ == other.col_);
+        }
+
+        //operator!=
+        bool operator!=(const Iterator& other) const {
+            return !(*this == other);
+        }
+
+    private:
+        std::vector<std::vector<T>>& data_;
+        int row_;
+        int col_;
+    };
+
+    Iterator begin() {
+        return Iterator(matrix_, 0, 0);
+    }
+
+    Iterator end() {
+        return Iterator(matrix_, matrix_.size(), 0);
+    }
+
+protected:
 
     int row_{};
     int column_{};

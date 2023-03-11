@@ -11,13 +11,12 @@ int main() {
         {2, 33, 01, 22}
     };
 
-   // Matrix<int> b(std::move(a));
+   Matrix<int> b(std::move(a));
 
-    Matrix<int> b = std::move(a);
+    for (int x : b) {
+        cout << x << " ";
+    }
 
-
-
-    cout << b;
 
     return 0;
 }
