@@ -1,9 +1,13 @@
-#include <assert.h>
 #include <cassert>
 #include "headers/matrix.hpp"
 
 int main() {
 
+    {
+        Identity<int> a;
+
+        std::cout << a;
+    }
 
     //c-tors and assignments
     {

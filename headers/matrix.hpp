@@ -66,9 +66,6 @@ public:
     //Create row_number*column_number matrix filled with 0's
     [[maybe_unused]] Matrix(int row_number, int column_number, T default_value = T{});
 
-    //Create square number_square_matrix_*number_square_matrix_ matrix filled with 0's
-    explicit Matrix(const int &number_square_matrix_);
-
     //cope ctor
     Matrix(const Matrix<T> &item);
 
@@ -249,11 +246,6 @@ requires Numeric<T>
 [[maybe_unused]] Matrix<T>::Matrix(const int row_number, const int column_number, T default_value)
     : row_(row_number), column_(column_number),
       matrix_(row_, std::vector<T>(column_, default_value)) {}
-
-template<typename T>
-requires Numeric<T>
-Matrix<T>::Matrix(const int &number_square_matrix_) : row_(number_square_matrix_), column_(number_square_matrix_),
-                                                      matrix_(row_, std::vector<T>(column_, T())) {}
 
 template<typename T>
 requires Numeric<T>
@@ -560,6 +552,55 @@ template<>
 void Matrix<double>::row_by_scalar(int row, double scalar) {
     for (double &element : matrix_[row]) {
         element *= scalar;
+    }
+}
+
+
+// --------------------------------------------------
+//
+//               SquareMatrix section
+//
+//---------------------------------------------------
+
+template<typename T> requires Numeric<T>
+class SquareMatrix : public Matrix<T> {
+public:
+
+    SquareMatrix() : Matrix<T>() {}
+
+    //Create square number_square_matrix_*number_square_matrix_ matrix filled with 0's
+    explicit SquareMatrix(const int &number_square_matrix_, T default_value = T{});
+protected:
+
+};
+
+template<typename T>
+requires Numeric<T>
+SquareMatrix<T>::SquareMatrix(const int &number_square_matrix_, T default_value) : Matrix<T>(number_square_matrix_,
+                                                                                             number_square_matrix_,
+                                                                                             default_value) {}
+
+
+
+// --------------------------------------------------
+//
+//               Identity matrix section
+//
+//---------------------------------------------------
+
+template<typename T> requires Numeric<T>
+class Identity : public SquareMatrix<T> {
+public:
+    explicit Identity(int size);
+protected:
+
+};
+
+template<typename T>
+requires Numeric<T>
+Identity<T>::Identity(int size) : SquareMatrix<T>(size) {
+    for (int i = 0; i < size; ++i) {
+        (*this)[i][i] = static_cast<T>(1);
     }
 }
 
