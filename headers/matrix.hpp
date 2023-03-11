@@ -9,103 +9,131 @@
 
 #include <iostream>
 #include <vector>
-
-using namespace std;
+#include <concepts>
+#include <iterator>
 
 template<typename T>
+concept Numeric = std::is_arithmetic_v<T>;
+
+
+//Matrix class is a class that presents 2d matrix and operations over it.
+//Matrix supports types of std::is_arithmetic_v<T>
+template<typename T> requires Numeric<T>
 class Matrix {
- private:
+public:
 
-  int row_{};
-  int column_{};
-  vector<vector<T>> matrix_{};
- public:
+    //Default ctor. creates 0*0 matrix
+    Matrix();
 
-  Matrix();
+    //Create row_number*column_number matrix filled with 0's
+    [[maybe_unused]] Matrix(int row_number, int column_number);
 
-  [[maybe_unused]] Matrix(int row_number, int column_number);
+    //Create square number_square_matrix_*number_square_matrix_ matrix filled with 0's
+    explicit Matrix(const int &number_square_matrix_);
 
-  explicit Matrix(const int &number_square_matrix_);
+    //cope ctor
+    Matrix(const Matrix<T> &item);
 
-  Matrix(const Matrix<T> &item);
+    //move ctor
+    Matrix(Matrix<T> &&other) noexcept;
 
-  Matrix(Matrix<T> &&other) noexcept;
+    //move assignment
+    Matrix<T> &operator=(Matrix<T> &&other) noexcept;
 
-  Matrix<T> &operator=(Matrix<T> && other) noexcept;
+    //std::initializer_list ctor
+    Matrix(std::initializer_list<std::initializer_list<T>> matrix);
 
-  Matrix(initializer_list<std::initializer_list<T>> matrix);
+    //d-ctor
+    ~Matrix();
 
-  ~Matrix();
+    //returns std::pair<int,int> of n*m matrix size
+    [[nodiscard]] std::pair<int, int> size() const;
 
-  [[nodiscard]] pair<int, int> size() const;
+    //return element of matrix[row_number][column_number]
+    T operator()(int row_number, int column_number) const;
 
-  int operator()(int row_number, int column_number) const;
+    //assignment operator
+    Matrix<T> &operator=(const Matrix<T> &item);
 
-  Matrix<T> &operator=(const Matrix<T> &item);
+    //swap function. swaps two obj. of class Matrix
+    void swap(Matrix<T> &first_matrix_, Matrix<T> &second_matrix_) noexcept;
 
-  void swap(Matrix<T> &first_matrix_, Matrix<T> &second_matrix_) noexcept;
+    Matrix<T> &operator+=(const Matrix<T> &item);
 
-  Matrix<T> &operator+=(const Matrix<T> &item);
+    Matrix<T> operator+(const Matrix<T> &item);
 
-  Matrix<T> operator+(const Matrix<T> &item);
+    Matrix<T> &operator-=(const Matrix<T> &item);
 
-  Matrix<T> &operator-=(const Matrix<T> &item);
+    Matrix<T> operator-(const Matrix<T> &item);
 
-  Matrix<T> operator-(const Matrix<T> &item);
+    Matrix<T> &operator*=(const Matrix<T> &item);
 
-  Matrix<T> &operator*=(const Matrix<T> &item);
+    Matrix<T> operator*(const Matrix<T> &item);
 
-  Matrix<T> operator*(const Matrix<T> &item);
+    Matrix<T> &operator*=(const int &item);
 
-  Matrix<T> &operator*=(const int &item);
+    Matrix<T> operator*(const int &item);
 
-  Matrix<T> operator*(const int &item);
-
-  friend ostream &operator<<(ostream &output_stream, const Matrix<T> &item) {
-    for (int i = 0; i < item.row_; i++) {
-      for (int j = 0; j < item.column_; ++j) {
-        output_stream << item.matrix_[i][j] << " ";
-      }
-      output_stream << "\n";
+    //overloaded ostream operator
+    friend std::ostream &operator<<(std::ostream &os, const Matrix<T> &item) {
+        for (const auto &row : item.matrix_) {
+            std::copy(row.begin(), row.end(), std::ostream_iterator<T>(os, " "));
+            os << '\n';
+        }
+        return os;
     }
-    return output_stream;
-  }
 
-  friend istream &operator>>(istream &input_stream, Matrix<T> &item) {
-    for (int i = 0; i < item.row_; i++) {
-      for (int j = 0; j < item.column_; ++j) {
-        input_stream >> item.matrix_[i][j];
-      }
+    //overloaded istream operator
+    friend std::istream &operator>>(std::istream &input_stream, Matrix<T> &item) {
+        for (auto& row : item.matrix_) {
+            for (auto& elem : row) {
+                input_stream >> elem;
+            }
+        }
+        if (!input_stream) {
+            throw std::runtime_error("Invalid input (matrix input error)\n");
+        }
+        return input_stream;
     }
-    return input_stream;
-  }
 
-  Matrix<T> &transpose();
+    Matrix<T> &Transpose();
 
-  T Dot(const Matrix<T> &matrix1);
+    //Dot product. Works if the matrices as of 1d vector size
+    T Dot(const Matrix<T> &matrix1);
+
+private:
+
+    int row_{};
+    int column_{};
+    std::vector<std::vector<T>> matrix_{};
 
 };
 
 template<typename T>
+requires Numeric<T>
 Matrix<T>::Matrix() : row_(0), column_(0), matrix_(column_) {}
 
 template<typename T>
+requires Numeric<T>
 [[maybe_unused]] Matrix<T>::Matrix(const int row_number, const int column_number)
     : row_(row_number), column_(column_number),
-      matrix_(row_, vector<T>(column_, T())) {}
+      matrix_(row_, std::vector<T>(column_, T())) {}
 
 template<typename T>
+requires Numeric<T>
 Matrix<T>::Matrix(const int &number_square_matrix_) : row_(number_square_matrix_), column_(number_square_matrix_),
-                                                      matrix_(row_, vector<T>(column_, T())) {}
+                                                      matrix_(row_, std::vector<T>(column_, T())) {}
 
 template<typename T>
+requires Numeric<T>
 Matrix<T>::~Matrix() {
-    matrix_ = vector<vector<T>>(0);
+    matrix_ = std::vector<std::vector<T>>(0);
 }
 
 template<typename T>
+requires Numeric<T>
 Matrix<T>::Matrix(const Matrix<T> &item) : row_(item.row_), column_(item.column_) {
-    matrix_.resize(row_, vector<T>(column_, T()));
+    matrix_.resize(row_, std::vector<T>(column_, T()));
     for (int i = 0; i < item.row_; i++) {
         for (int j = 0; j < item.column_; ++j) {
             matrix_[i][j] = item.matrix_[i][j];
@@ -114,6 +142,7 @@ Matrix<T>::Matrix(const Matrix<T> &item) : row_(item.row_), column_(item.column_
 }
 
 template<typename T>
+requires Numeric<T>
 Matrix<T>::Matrix(Matrix<T> &&other) noexcept {
     matrix_ = std::move(other.matrix_);
     row_ = other.row_;
@@ -123,6 +152,7 @@ Matrix<T>::Matrix(Matrix<T> &&other) noexcept {
 }
 
 template<typename T>
+requires Numeric<T>
 Matrix<T> &Matrix<T>::operator=(Matrix<T> &&other) noexcept {
     if (this == &other) return *this;
 
@@ -138,14 +168,15 @@ Matrix<T> &Matrix<T>::operator=(Matrix<T> &&other) noexcept {
 }
 
 template<typename T>
+requires Numeric<T>
 Matrix<T>::Matrix(const std::initializer_list<std::initializer_list<T>> list) {
     matrix_.reserve(list.size());
     int mx{};
     int mn{};
-    for (const auto& element : list ) {
-        vector<T> tmp;
+    for (const auto &element : list) {
+        std::vector<T> tmp;
         tmp.reserve(element.size());
-        for (const auto& element2 : element) {
+        for (const auto &element2 : element) {
             tmp.push_back(element2);
         }
         mx = ((mx < tmp.size()) ? tmp.size() : mx);
@@ -160,16 +191,19 @@ Matrix<T>::Matrix(const std::initializer_list<std::initializer_list<T>> list) {
 }
 
 template<typename T>
-[[nodiscard]] pair<int, int> Matrix<T>::size() const {
-    return pair<int, int>{row_, column_};
+requires Numeric<T>
+[[nodiscard]] std::pair<int, int> Matrix<T>::size() const {
+    return std::pair<int, int>{row_, column_};
 }
 
 template<typename T>
-int Matrix<T>::operator()(const int row_number, const int column_number) const {
+requires Numeric<T>
+T Matrix<T>::operator()(const int row_number, const int column_number) const {
     return matrix_[row_number][column_number];
 }
 
 template<typename T>
+requires Numeric<T>
 Matrix<T> &Matrix<T>::operator=(const Matrix<T> &item) {
     Matrix tmp(item);
     swap(tmp, *this);
@@ -177,6 +211,7 @@ Matrix<T> &Matrix<T>::operator=(const Matrix<T> &item) {
 }
 
 template<typename T>
+requires Numeric<T>
 void Matrix<T>::swap(Matrix<T> &first_matrix_, Matrix<T> &second_matrix_) noexcept {
     std::swap(first_matrix_.matrix_, second_matrix_.matrix_);
     std::swap(first_matrix_.row_, second_matrix_.row_);
@@ -184,6 +219,7 @@ void Matrix<T>::swap(Matrix<T> &first_matrix_, Matrix<T> &second_matrix_) noexce
 }
 
 template<typename T>
+requires Numeric<T>
 Matrix<T> &Matrix<T>::operator+=(const Matrix<T> &item) {
     if (item.size() == size()) {
         Matrix tmp_matrix_(*this);
@@ -198,6 +234,7 @@ Matrix<T> &Matrix<T>::operator+=(const Matrix<T> &item) {
 }
 
 template<typename T>
+requires Numeric<T>
 Matrix<T> Matrix<T>::operator+(const Matrix<T> &item) {
     Matrix tmp_matrix_(*this);
     tmp_matrix_ += item;
@@ -205,6 +242,7 @@ Matrix<T> Matrix<T>::operator+(const Matrix<T> &item) {
 }
 
 template<typename T>
+requires Numeric<T>
 Matrix<T> &Matrix<T>::operator-=(const Matrix<T> &item) {
     if (item.size() == size()) {
         Matrix tmp_matrix_(*this);
@@ -219,6 +257,7 @@ Matrix<T> &Matrix<T>::operator-=(const Matrix<T> &item) {
 }
 
 template<typename T>
+requires Numeric<T>
 Matrix<T> Matrix<T>::operator-(const Matrix<T> &item) {
     Matrix tmp_matrix_(*this);
     tmp_matrix_ -= item;
@@ -226,6 +265,7 @@ Matrix<T> Matrix<T>::operator-(const Matrix<T> &item) {
 }
 
 template<typename T>
+requires Numeric<T>
 Matrix<T> &Matrix<T>::operator*=(const Matrix<T> &item) {
     if (column_ == item.row_) {
         Matrix tmp_matrix_(row_, item.column_);
@@ -242,6 +282,7 @@ Matrix<T> &Matrix<T>::operator*=(const Matrix<T> &item) {
 }
 
 template<typename T>
+requires Numeric<T>
 Matrix<T> Matrix<T>::operator*(const Matrix<T> &item) {
     Matrix tmp_matrix_(*this);
     tmp_matrix_ *= item;
@@ -249,6 +290,7 @@ Matrix<T> Matrix<T>::operator*(const Matrix<T> &item) {
 }
 
 template<typename T>
+requires Numeric<T>
 Matrix<T> Matrix<T>::operator*(const int &item) {
     Matrix tmp_matrix_(*this);
     tmp_matrix_ *= item;
@@ -256,6 +298,7 @@ Matrix<T> Matrix<T>::operator*(const int &item) {
 }
 
 template<typename T>
+requires Numeric<T>
 Matrix<T> &Matrix<T>::operator*=(const int &item) {
     Matrix tmp_matrix_(*this);
     for (int i = 0; i < row_; i++) {
@@ -268,7 +311,8 @@ Matrix<T> &Matrix<T>::operator*=(const int &item) {
 }
 
 template<typename T>
-Matrix<T> &Matrix<T>::transpose() {
+requires Numeric<T>
+Matrix<T> &Matrix<T>::Transpose() {
     Matrix tmp_matrix_(column_, row_);
     for (int i = 0; i < column_; i++) {
         for (int j = 0; j < row_; ++j) {
@@ -280,6 +324,7 @@ Matrix<T> &Matrix<T>::transpose() {
 }
 
 template<typename T>
+requires Numeric<T>
 T Matrix<T>::Dot(const Matrix<T> &matrix1) {
     if (matrix1.column_ == 1 && column_ == 1 && matrix1.size() == size()) {
         int dot = 0;
