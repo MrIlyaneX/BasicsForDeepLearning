@@ -2,16 +2,22 @@
 
 #include "headers/matrix.hpp"
 
-
 using namespace std;
 
 int main() {
-    Matrix<int> a = {{1,2}, {3,4}};
+    Matrix<int> a = {
+        {1, 2, 2},
+        {3, 4},
+        {2, 33, 01, 22}
+    };
 
-    vector<vector<int>> q = {{1,2}, {3,4}};
+   // Matrix<int> b(std::move(a));
 
-    int t;
+    Matrix<int> b = std::move(a);
 
-    cout << t;
+
+
+    cout << b;
+
     return 0;
 }
