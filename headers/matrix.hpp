@@ -225,6 +225,9 @@ protected:
     //swap columns
     void exchange_columns_(int col1, int col2);
 
+    //multiply row by a scalar
+    void row_by_scalar(int row, T scalar);
+
 };
 
 template<typename T>
@@ -498,6 +501,35 @@ bool Matrix<T>::operator==(const Matrix<T> &item) {
         return false;
     }
     return true;
+}
+
+template<typename T>
+requires Numeric<T>
+void Matrix<T>::row_by_scalar(int row, T scalar) {
+    for (T &element : matrix_[row]) {
+        element *= scalar;
+    }
+}
+
+template<>
+void Matrix<int>::row_by_scalar(int row, int scalar) {
+    for (int &element : matrix_[row]) {
+        element *= scalar;
+    }
+}
+
+template<>
+void Matrix<float>::row_by_scalar(int row, float scalar) {
+    for (float &element : matrix_[row]) {
+        element *= scalar;
+    }
+}
+
+template<>
+void Matrix<double>::row_by_scalar(int row, double scalar) {
+    for (double &element : matrix_[row]) {
+        element *= scalar;
+    }
 }
 
 #endif //DL_MATRIX_HPP
