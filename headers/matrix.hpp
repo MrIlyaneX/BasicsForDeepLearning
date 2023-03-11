@@ -20,6 +20,10 @@ concept Numeric = std::is_arithmetic_v<T>;
 //--------------------
 
 //--------------------
+// TODO: Implement Const Iterator
+//--------------------
+
+//--------------------
 // TODO: Gaussian Eliminations
 //--------------------
 
@@ -36,6 +40,15 @@ concept Numeric = std::is_arithmetic_v<T>;
 //--------------------
 
 
+
+//--------------------
+// TODO: Square Matrix (different functional)
+//--------------------
+
+//--------------------
+// TODO: Identity Matrix (different functional)
+//--------------------
+
 //Matrix class is a class that presents 2d matrix and operations over it.
 //Matrix supports types of std::is_arithmetic_v<T>
 template<typename T> requires Numeric<T>
@@ -46,7 +59,7 @@ public:
     Matrix();
 
     //Create row_number*column_number matrix filled with 0's
-    [[maybe_unused]] Matrix(int row_number, int column_number);
+    [[maybe_unused]] Matrix(int row_number, int column_number, T default_value = 0);
 
     //Create square number_square_matrix_*number_square_matrix_ matrix filled with 0's
     explicit Matrix(const int &number_square_matrix_);
@@ -94,6 +107,8 @@ public:
 
     Matrix<T> operator*(const int &item);
 
+    bool operator==(const Matrix<T> &item);
+
     //overloaded ostream operator
     friend std::ostream &operator<<(std::ostream &os, const Matrix<T> &item) {
         for (const auto &row : item.matrix_) {
@@ -124,23 +139,23 @@ public:
     void Resize(int new_row_size, int new_col_size);
 
     //own iterator class for running through the Matrix out of class.
-    class Iterator{
+    class iterator {
     public:
         //default c-tor
-        Iterator(std::vector<std::vector<T>>& data_, int row_, int col_) : data_(data_), row_(row_), col_(col_) {}
+        iterator(std::vector<std::vector<T>> &data, int row, int col) : data_(data), row_(row), col_(col) {}
 
         //dereference operator
-        T& operator*() const {
+        T &operator*() const {
             return data_[row_][col_];
         }
 
         //for pointer-access operator
-        T* operator->() const {
+        T *operator->() const {
             return &(data_[row_][col_]);
         }
 
         //increment operator
-        Iterator& operator++() {
+        iterator &operator++() {
             ++col_;
             if (col_ == data_[row_].size()) {
                 ++row_;
@@ -150,34 +165,52 @@ public:
         }
 
         //increment operator
-        Iterator operator++(int) {
-            Iterator tmp = *this;
+        iterator operator++(int) {
+            iterator tmp = *this;
             ++(*this);
             return tmp;
         }
 
+        iterator &operator--() {
+            if (col_ != 0 || row_ != 0) {
+                if (col_ != 0) {
+                    --col_;
+                } else {
+                    col_ = data_[--row_].size();
+                }
+            }
+            return *this;
+        }
+
+        //increment operator
+        iterator operator--(int) {
+            iterator tmp = *this;
+            --(*this);
+            return tmp;
+        }
+
         //operator==
-        bool operator==(const Iterator& other) const {
+        bool operator==(const iterator &other) const {
             return (row_ == other.row_ && col_ == other.col_);
         }
 
         //operator!=
-        bool operator!=(const Iterator& other) const {
+        bool operator!=(const iterator &other) const {
             return !(*this == other);
         }
 
     private:
-        std::vector<std::vector<T>>& data_;
+        std::vector<std::vector<T>> &data_;
         int row_;
         int col_;
     };
 
-    Iterator begin() {
-        return Iterator(matrix_, 0, 0);
+    iterator begin() {
+        return iterator(matrix_, 0, 0);
     }
 
-    Iterator end() {
-        return Iterator(matrix_, matrix_.size(), 0);
+    iterator end() {
+        return iterator(matrix_, matrix_.size(), 0);
     }
 
 protected:
@@ -200,9 +233,9 @@ Matrix<T>::Matrix() : row_(0), column_(0), matrix_(column_) {}
 
 template<typename T>
 requires Numeric<T>
-[[maybe_unused]] Matrix<T>::Matrix(const int row_number, const int column_number)
+[[maybe_unused]] Matrix<T>::Matrix(const int row_number, const int column_number, T default_value)
     : row_(row_number), column_(column_number),
-      matrix_(row_, std::vector<T>(column_, T())) {}
+      matrix_(row_, std::vector<T>(column_, default_value)) {}
 
 template<typename T>
 requires Numeric<T>
@@ -411,12 +444,23 @@ Matrix<T> &Matrix<T>::Transpose() {
 template<typename T>
 requires Numeric<T>
 T Matrix<T>::Dot(const Matrix<T> &matrix1) {
-    if (matrix1.column_ == 1 && column_ == 1 && matrix1.size() == size()) {
-        int dot = 0;
-        int n = matrix1.row_;
-        for (int i = 0; i < n; i++) dot += matrix1.matrix_[i][0] * matrix_[i][0];
-        return dot;
+    if (matrix1.size() == size()) {
+        if (matrix1.column_ == 1 && column_ == 1) {
+            int dot = 0;
+            int n = matrix1.row_;
+            for (int i = 0; i < n; i++) dot += matrix1.matrix_[i][0] * matrix_[i][0];
+            return dot;
+        }
+        if (matrix1.row_ == 1 && row_ == 1) {
+            int dot = 0;
+            int n = matrix1.column_;
+            for (int i = 0; i < n; i++) dot += matrix1.matrix_[0][i] * matrix_[0][i];
+            return dot;
+        }
     }
+
+    throw std::runtime_error("Wrong size of matrices for using Dot (product)");
+
 }
 
 template<typename T>
@@ -439,6 +483,21 @@ void Matrix<T>::Resize(int new_row_size, int new_col_size) {
     matrix_.resize(new_row_size, std::vector<T>(new_col_size, T()));
     row_ = new_row_size;
     column_ = new_col_size;
+}
+
+template<typename T>
+requires Numeric<T>
+bool Matrix<T>::operator==(const Matrix<T> &item) {
+    if (size() == item.size()) {
+        for (int i = 0; i < row_; i++) {
+            for (int j = 0; j < column_; ++j) {
+                if (matrix_[i][j] != item.matrix_[i][j]) return false;
+            }
+        }
+    } else {
+        return false;
+    }
+    return true;
 }
 
 #endif //DL_MATRIX_HPP
