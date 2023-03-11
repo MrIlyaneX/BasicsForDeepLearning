@@ -20,6 +20,11 @@ concept Numeric = std::is_arithmetic_v<T>;
 //--------------------
 
 //--------------------
+// TODO: Create Copy method and make Dimensional check for simple operator=
+//--------------------
+
+
+//--------------------
 // TODO: Implement Const Iterator
 //--------------------
 
@@ -59,7 +64,7 @@ public:
     Matrix();
 
     //Create row_number*column_number matrix filled with 0's
-    [[maybe_unused]] Matrix(int row_number, int column_number, T default_value = 0);
+    [[maybe_unused]] Matrix(int row_number, int column_number, T default_value = T{});
 
     //Create square number_square_matrix_*number_square_matrix_ matrix filled with 0's
     explicit Matrix(const int &number_square_matrix_);
@@ -84,6 +89,11 @@ public:
 
     //return element of matrix[row_number][column_number]
     T operator()(int row_number, int column_number) const;
+
+    //simple overloading by
+    std::vector<T> &operator[](int row_index);
+
+    T &operator[](std::pair<int, int> indexes);
 
     //assignment operator
     Matrix<T> &operator=(const Matrix<T> &item);
@@ -509,6 +519,27 @@ void Matrix<T>::row_by_scalar(int row, T scalar) {
     for (T &element : matrix_[row]) {
         element *= scalar;
     }
+}
+
+template<typename T>
+requires Numeric<T>
+std::vector<T> &Matrix<T>::operator[](int row_index) {
+    if (row_index < 0 || row_index >= row_) {
+        throw std::out_of_range("Row index is out of range.");
+    }
+    return matrix_[row_index];
+}
+
+template<typename T>
+requires Numeric<T>
+T &Matrix<T>::operator[](std::pair<int, int> indexes) {
+    if (indexes.first < 0 || indexes.first >= row_) {
+        throw std::out_of_range("Row index is out of range.");
+    }
+    if (indexes.second < 0 || indexes.second >= column_) {
+        throw std::out_of_range("Column index is out of range.");
+    }
+    return matrix_[indexes.first][indexes.second];
 }
 
 template<>

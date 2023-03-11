@@ -7,7 +7,6 @@ int main() {
 
     //c-tors and assignments
     {
-
         int n = 2, default_val = 2;
 
         //default c-tor
@@ -19,8 +18,6 @@ int main() {
             }
         }
 
-
-
         //list init
         Matrix<int> b = {{0, 1}, {1, 2}};
 
@@ -29,7 +26,6 @@ int main() {
                 assert(b(i, j) == i + j);
             }
         }
-
 
         //assignment
         b = a;
@@ -41,7 +37,7 @@ int main() {
         }
     }
 
-    //overloaded operations, such as + - *
+    //overloaded operations, such as + - * [] and [][]
     {
         int n = 2, default_val = 2, m = 10;
 
@@ -86,6 +82,14 @@ int main() {
 
         tmp = c * d;
 
+        Matrix<int> q = {{0, 1}, {1, 2}, {3, 4}};
+
+        for (int i : q[0]) {
+            std::cout << i << " ";
+        }
+
+        q[0][0] = 2;
+        q[0] = std::vector<int>(2, 1);
     }
 
     //Matrix operations -> Transpose, Dot(for vector-based matrix)
@@ -111,6 +115,7 @@ int main() {
         c.Transpose();
         d.Transpose();
         assert(c * d == tmp);
+
     }
 
     //Gaussian Implementations, Inverse, Solve Systems
