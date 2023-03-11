@@ -15,7 +15,6 @@
 template<typename T>
 concept Numeric = std::is_arithmetic_v<T>;
 
-
 //Matrix class is a class that presents 2d matrix and operations over it.
 //Matrix supports types of std::is_arithmetic_v<T>
 template<typename T> requires Numeric<T>
@@ -85,8 +84,8 @@ public:
 
     //overloaded istream operator
     friend std::istream &operator>>(std::istream &input_stream, Matrix<T> &item) {
-        for (auto& row : item.matrix_) {
-            for (auto& elem : row) {
+        for (auto &row : item.matrix_) {
+            for (auto &elem : row) {
                 input_stream >> elem;
             }
         }
@@ -101,11 +100,19 @@ public:
     //Dot product. Works if the matrices as of 1d vector size
     T Dot(const Matrix<T> &matrix1);
 
+    void Resize(int new_row_size, int new_col_size);
+
 private:
 
     int row_{};
     int column_{};
     std::vector<std::vector<T>> matrix_{};
+
+    //swap rows
+    void exchange_rows_(int row1, int row2);
+
+    //swap columns
+    void exchange_columns_(int col1, int col2);
 
 };
 
@@ -332,6 +339,28 @@ T Matrix<T>::Dot(const Matrix<T> &matrix1) {
         for (int i = 0; i < n; i++) dot += matrix1.matrix_[i][0] * matrix_[i][0];
         return dot;
     }
+}
+
+template<typename T>
+requires Numeric<T>
+void Matrix<T>::exchange_rows_(int row1, int row2) {
+    std::swap(matrix_[row1], matrix_[row2]);
+}
+
+template<typename T>
+requires Numeric<T>
+void Matrix<T>::exchange_columns_(int col1, int col2) {
+    for (int i = 0; i < row_; ++i) {
+        std::swap(matrix_[i][col1], matrix_[i][col2]);
+    }
+}
+
+template<typename T>
+requires Numeric<T>
+void Matrix<T>::Resize(int new_row_size, int new_col_size) {
+    matrix_.resize(new_row_size, std::vector<T>(new_col_size, T()));
+    row_ = new_row_size;
+    column_ = new_col_size;
 }
 
 #endif //DL_MATRIX_HPP
